@@ -1,4 +1,4 @@
-module example.com/terraform-provider-k8spolicy
+module github.com/ronak-agarwal/terraform-provider-k8spolicy
 
 go 1.14
 

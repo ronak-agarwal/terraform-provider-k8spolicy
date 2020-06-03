@@ -25,7 +25,7 @@ const kubeconfigDefault = "~/.kube/config"
 func Provider() *schema.Provider {
 	p := &schema.Provider{
 		ResourcesMap: map[string]*schema.Resource{
-			"gatekeeper_constraint_template": resourceCustom(),
+			"k8spolicy_constraint_template": resourceCustom(),
 		},
 		Schema: map[string]*schema.Schema{
 			"kubeconfig_path": {
