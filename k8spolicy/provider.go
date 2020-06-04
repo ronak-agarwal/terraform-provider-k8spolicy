@@ -69,10 +69,6 @@ func Provider() *schema.Provider {
 			}
 		}
 
-		// Increase QPS and Burst rate limits
-		config.QPS = 120
-		config.Burst = 240
-
 		client, err := dynamic.NewForConfig(config)
 		if err != nil {
 			return nil, err

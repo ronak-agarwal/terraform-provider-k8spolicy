@@ -10,6 +10,7 @@ require (
 	github.com/imdario/mergo v0.3.9 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	k8s.io/api v0.18.3 // indirect
+	k8s.io/apimachinery v0.18.3
 	k8s.io/client-go v0.0.0-20200603035352-be97aaa976ad
 	k8s.io/utils v0.0.0-20200603063816-c1c6865ac451 // indirect
 )

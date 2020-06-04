@@ -1,0 +1,27 @@
+{
+  "apiVersion": "templates.gatekeeper.sh/v1beta1",
+  "kind": "ConstraintTemplate",
+  "metadata": {
+    "name": "XX"
+  },
+  "spec": {
+    "crd": {
+      "spec": {
+        "names": {
+          "kind": "XX"
+        },
+        "validation": {
+          "openAPIV3Schema": {
+            "properties": {XX}
+          }
+        }
+      }
+    },
+    "targets": [
+      {
+        "target": "admission.k8s.gatekeeper.sh",
+        "rego": "XX"
+      }
+    ]
+  }
+}
