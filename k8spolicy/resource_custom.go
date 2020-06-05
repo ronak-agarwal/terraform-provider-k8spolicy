@@ -1,9 +1,15 @@
 package k8spolicy
 
 import (
-	"fmt"
+	"encoding/json"
+	"io"
+	"log"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/yaml"
 )
 
 func resourceCustom() *schema.Resource {
@@ -34,47 +40,39 @@ func resourceCustom() *schema.Resource {
 	}
 }
 
-func policytemplate() string {
-	return fmt.Sprintf(`
-		{
-		  "apiVersion": "templates.gatekeeper.sh/v1beta1",
-		  "kind": "ConstraintTemplate",
-		  "metadata": {
-		    "name": "XX"
-		  },
-		  "spec": {
-		    "crd": {
-		      "spec": {
-		        "names": {
-		          "kind": "XX"
-		        },
-		        "validation": {
-		          "openAPIV3Schema": {
-		            "properties": {}
-		          }
-		        }
-		      }
-		    },
-		    "targets": [
-		      {
-		        "target": "admission.k8s.gatekeeper.sh",
-		        "rego": "XX"
-		      }
-		    ]
-		  }
-		}
-  `)
-}
-
 func resourceCreate(d *schema.ResourceData, m interface{}) error {
-	srcJSON := policytemplate()
-	u, err := parseJSON(srcJSON)
+
+	f, err := os.Open("./constrainttemplate/template.yaml")
 	if err != nil {
-		return fmt.Errorf("ResourceCreate: %s", err)
+		log.Fatal(err)
 	}
-	u.SetName("test")
-	u.SetKind("test1")
-	fmt.Println(u)
+	decode := yaml.NewYAMLOrJSONDecoder(f, 4096)
+	ext := runtime.RawExtension{}
+	if err := decode.Decode(&ext); err != nil {
+		if err == io.EOF {
+			log.Fatal(err)
+		}
+		log.Fatal(err)
+	}
+	var unstruct unstructured.Unstructured
+	unstruct.Object = make(map[string]interface{})
+	var blob interface{}
+	if err := json.Unmarshal(ext.Raw, &blob); err != nil {
+		log.Fatal(err)
+	}
+
+	unstruct.Object = blob.(map[string]interface{})
+
+	constraintNameMap := map[string]string{}
+	constraintNameMap["name"] = d.Get("constraint_name").(string)
+	unstructured.SetNestedStringMap(unstruct.Object, constraintNameMap, "metadata")
+
+	crdNameMap := map[string]string{}
+	crdNameMap["kind"] = d.Get("constraint_crd_name").(string)
+	unstructured.SetNestedStringMap(unstruct.Object, crdNameMap, "spec", "crd", "spec", "names")
+
+	unstruct.Object["spec"].(map[string]interface{})["targets"].([]interface{})[0].(map[string]interface{})["rego"] = d.Get("template_defination").(string)
+
 	return nil
 }
 
