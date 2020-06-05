@@ -1,7 +1,9 @@
 # terraform-provider-k8spolicy
 
+## Usage
 
-resource "k8spolicy_constraint_template" "my-server" {
+```hcl
+resource "k8spolicy_constraint_template" "my-policy" {
 
   constraint_name = ""
   constraint_crd_name = ""
@@ -13,3 +15,4 @@ resource "k8spolicy_constraint_template" "my-server" {
 
   DEFINATION
 }
+```
