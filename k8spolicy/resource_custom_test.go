@@ -1,7 +1,6 @@
 package k8spolicy
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/resource"
@@ -13,7 +12,10 @@ func TestAccResourceK8SPolicy_constraint_template(t *testing.T) {
 			{
 				Config: testAccResourceK8sPolicyConfigbasicInitial(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("k8spolicy_constraint_template.test", "manifest", "k8scontainerlimits"),
+					resource.TestCheckResourceAttr("k8spolicy_constraint_template.test", "constraint_name", "k8scontainerlimits"),
+					resource.TestCheckResourceAttr("k8spolicy_constraint_template.test", "constraint_crd_name", "k8scontainerCRD"),
+					resource.TestCheckResourceAttr("k8spolicy_constraint_template.test", "parameters", "params"),
+					resource.TestCheckResourceAttr("k8spolicy_constraint_template.test", "template_defination", "defination"),
 				),
 			},
 		},
@@ -21,42 +23,6 @@ func TestAccResourceK8SPolicy_constraint_template(t *testing.T) {
 }
 
 func testAccResourceK8sPolicyConfigbasicInitial() string {
-	return fmt.Sprintf(`
-  resource "k8spolicy_constraint_template" "test" {
-  	manifest = {
-  "apiVersion": "templates.gatekeeper.sh/v1beta1",
-  "kind": "ConstraintTemplate",
-  "metadata": {
-    "name": "k8scontainerlimits"
-  },
-  "spec": {
-    "crd": {
-      "spec": {
-        "names": {
-          "kind": "K8sContainerLimits"
-        },
-        "validation": {
-          "openAPIV3Schema": {
-            "properties": {
-              "cpu": {
-                "type": "string"
-              },
-              "memory": {
-                "type": "string"
-              }
-            }
-          }
-        }
-      }
-    },
-    "targets": [
-      {
-        "target": "admission.k8s.gatekeeper.sh",
-        "rego": "package k8scontainerlimits\nmissing(obj, field) = true {\n  not obj[field]\n}\n"
-      }
-    ]
-  }
-}
-  }
-  `)
+
+	return ""
 }

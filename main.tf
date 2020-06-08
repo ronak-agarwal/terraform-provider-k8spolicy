@@ -1,12 +1,12 @@
-resource "k8spolicy_constraint_template" "my-server" {
+provider k8spolicy {
+  load_config_file = true
+}
 
-  constraint_name = ""
-  constraint_crd_name = ""
-  parameters = << PARAMETERS
+resource "k8spolicy_constraint_template" "my-policy" {
 
-  PARAMETERS
+  constraint_name = "RonakLimit"
+  constraint_crd_name = "RonakCRD"
+  parameters = "paramas"
 
-  template_defination = << DEFINATION
-
-  DEFINATION
+  template_defination = "Test Ronak"
 }
