@@ -1,5 +1,7 @@
 # terraform-provider-k8spolicy
 
+STATUS - In Development
+
 You need to have Gatekeeper OPA v3 running on your kubernetes - https://github.com/open-policy-agent/gatekeeper
 
 Supported list of policy libraries - https://github.com/open-policy-agent/gatekeeper/tree/master/library
