@@ -1,0 +1,8 @@
+{
+  "cpu": {
+    "type": "string"
+  },
+  "memory": {
+    "type": "string"
+  }
+}

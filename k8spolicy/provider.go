@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/terraform"
 	"github.com/mitchellh/go-homedir"
+	"k8s.io/client-go/dynamic"
 	kubernetes "k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	restclient "k8s.io/client-go/rest"
@@ -16,6 +17,7 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
+// Provider ...
 func Provider() terraform.ResourceProvider {
 	return &schema.Provider{
 		Schema: map[string]*schema.Schema{
@@ -118,8 +120,11 @@ func Provider() terraform.ResourceProvider {
 	}
 }
 
-// KubeProvider func to return client and config to work with K8s API
-type KubeProvider func() (*kubernetes.Clientset, restclient.Config)
+// Config ...
+type Config struct {
+	Client    dynamic.Interface
+	Clientset *kubernetes.Clientset
+}
 
 var k8srawCreateRetryCount uint64
 
@@ -166,19 +171,17 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		cfg.BearerToken = v.(string)
 	}
 
-	k, err := kubernetes.NewForConfig(cfg)
+	client, err := dynamic.NewForConfig(cfg)
+	if err != nil {
+		return nil, err
+	}
+
+	clientset, err := kubernetes.NewForConfig(cfg)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to configure: %s", err)
 	}
 
-	var meta KubeProvider
-	meta = func() (*kubernetes.Clientset, restclient.Config) {
-		// Defref config to create a shallow copy, allowing each func
-		// to manipulate the state without affecting another func
-		return k, *cfg
-	}
-
-	return meta, nil
+	return &Config{client, clientset}, nil
 }
 
 func tryLoadingConfigFile(d *schema.ResourceData) (*restclient.Config, error) {
