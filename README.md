@@ -24,7 +24,9 @@ resource "k8spolicy_constraint_template" "my-policy" {
 ```
 There are two inputs -
 
-a) Below is sample rego.yml for creating ConstraintTemplate (Required)
+a) Below is sample rego.yml for creating ConstraintTemplate (Required).
+
+You can find this rego content from Gatekeeper policies library, below is sample template for AppArmor Rego
 
 ```hcl
 package k8spspapparmor
