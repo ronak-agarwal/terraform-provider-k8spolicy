@@ -44,8 +44,11 @@ input_containers[c] {
 }
 ```
 
-b) Below is sample params.json for creating ConstraintTemplate (Optional depends on Rego difination)
-For creating such json you can copy the yaml content from any OPA Gatekeeper policy templates and paste in any online yaml to json convertor (Eg. https://onlineyamltools.com/convert-yaml-to-json). You should pick yaml, anything between properties and targets [copy till targets and not targets keys].
+b) Below is sample params.json for creating ConstraintTemplate (Optional depends on Rego difination).
+
+For creating such json you can copy the yaml content from any OPA Gatekeeper policy templates and paste in any online yaml to json convertor (Eg. https://onlineyamltools.com/convert-yaml-to-json).
+
+You should pick yaml, anything between properties and targets [copy till targets and not targets keys].
 
 ```hcl
 {
