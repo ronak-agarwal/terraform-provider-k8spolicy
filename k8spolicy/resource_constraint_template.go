@@ -20,15 +20,15 @@ var (
 	}
 )
 
-func resourceCustom() *schema.Resource {
+func resourceConstraintTemplate() *schema.Resource {
 	return &schema.Resource{
-		Create: resourceCreate,
-		Read:   resourceRead,
-		Delete: resourceDelete,
-		Update: resourceUpdate,
+		Create: resourceCreateConstraintTemplate,
+		Read:   resourceReadConstraintTemplate,
+		Delete: resourceDeleteConstraintTemplate,
+		Update: resourceUpdateConstraintTemplate,
 
 		Schema: map[string]*schema.Schema{
-			"constraint_name": &schema.Schema{
+			"constraint_template_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
 			},
@@ -48,37 +48,37 @@ func resourceCustom() *schema.Resource {
 	}
 }
 
-// resourceCreate ...
-func resourceCreate(d *schema.ResourceData, m interface{}) error {
+// resourceCreateConstraintTemplate ...
+func resourceCreateConstraintTemplate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Config).Client
 	log.Printf("Creating NewConstraintTemplate")
 	var constraintTemplate *unstructured.Unstructured
 
 	if d.Get("parameters").(string) == "" {
-		constraintTemplate = NewConstraintTemplateWithoutParams(d.Get("constraint_name").(string), d.Get("constraint_crd_name").(string), d.Get("rego_defination").(string))
+		constraintTemplate = NewConstraintTemplateWithoutParams(d.Get("constraint_template_name").(string), d.Get("constraint_crd_name").(string), d.Get("rego_defination").(string))
 	} else {
 		var params map[string]interface{}
 		json.Unmarshal([]byte(d.Get("parameters").(string)), &params)
-		constraintTemplate = NewConstraintTemplateWithParams(d.Get("constraint_name").(string), d.Get("constraint_crd_name").(string), d.Get("rego_defination").(string), params)
+		constraintTemplate = NewConstraintTemplateWithParams(d.Get("constraint_template_name").(string), d.Get("constraint_crd_name").(string), d.Get("rego_defination").(string), params)
 	}
 	result, err := client.Resource(constraintTemplateGVR).Create(context.TODO(), constraintTemplate, metav1.CreateOptions{})
 	errExit(fmt.Sprintf("Failed to create NewConstraintTemplate %#v", constraintTemplate), err)
 	log.Printf("Created NewConstraintTemplate %s", result)
 
-	return resourceRead(d, m)
+	return resourceReadConstraintTemplate(d, m)
 }
 
-func resourceRead(d *schema.ResourceData, m interface{}) error {
+func resourceReadConstraintTemplate(d *schema.ResourceData, m interface{}) error {
 
 	return nil
 }
 
-func resourceDelete(d *schema.ResourceData, m interface{}) error {
+func resourceDeleteConstraintTemplate(d *schema.ResourceData, m interface{}) error {
 
 	return nil
 }
 
-func resourceUpdate(d *schema.ResourceData, m interface{}) error {
+func resourceUpdateConstraintTemplate(d *schema.ResourceData, m interface{}) error {
 
 	return nil
 }

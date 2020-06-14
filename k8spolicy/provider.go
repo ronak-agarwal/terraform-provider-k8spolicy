@@ -114,7 +114,8 @@ func Provider() terraform.ResourceProvider {
 		DataSourcesMap: map[string]*schema.Resource{},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"k8spolicy_constraint_template": resourceCustom(),
+			"k8spolicy_constraint_template": resourceConstraintTemplate(),
+			"k8spolicy_constraint":          resourceConstraint(),
 		},
 		ConfigureFunc: providerConfigure,
 	}

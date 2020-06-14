@@ -16,10 +16,9 @@ Below is main.tf sample for creating ConstraintTemplate
 ```hcl
 resource "k8spolicy_constraint_template" "my-policy" {
 
-  constraint_name = "k8spspapparmor"
+  constraint_template_name = "k8spspapparmor"
   constraint_crd_name = "K8sPSPAppArmor"
   parameters = "${file("${path.module}/parameters.json")}"
-
   rego_defination = "${file("${path.module}/rego.yml")}"
 }
 ```
