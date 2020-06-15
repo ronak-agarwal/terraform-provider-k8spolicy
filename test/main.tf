@@ -7,6 +7,14 @@ resource "k8spolicy_constraint_template" "my-policy" {
   constraint_template_name = "ronaklimit"
   constraint_crd_name = "Ronaklimit"
   parameters = "${file("${path.module}/parameters.json")}"
-
   rego_defination = "${file("${path.module}/rego.yml")}"
+}
+
+resource "k8spolicy_constraint" "my-constraint" {
+
+  constraint_name = "ronak-constraint"
+  constraint_crd_name = "Ronaklimit"
+  applyon_apigroups = [""]
+  applyon_kinds = ["Pod"]
+  parameters_values = "${file("${path.module}/parameters_values.json")}"
 }

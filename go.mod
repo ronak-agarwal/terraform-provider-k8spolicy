@@ -5,7 +5,7 @@ go 1.14
 require (
 	cloud.google.com/go v0.51.0 // indirect
 	github.com/Azure/go-autorest/autorest v0.9.6 // indirect
-	github.com/aws/aws-sdk-go v1.30.12 // indirect
+	github.com/aws/aws-sdk-go v1.30.12
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/googleapis/gnostic v0.4.1 // indirect
 	github.com/gophercloud/gophercloud v0.3.1-0.20190807175045-25a84d593c97 // indirect
