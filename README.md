@@ -8,7 +8,7 @@ Supported list of policy libraries - https://github.com/open-policy-agent/gateke
 
 ## Usage
 
-#### Create ConstraintTemplate
+#### (A) Create ConstraintTemplate
 -- TODO --
 
 Sample Policy Template used for below example - https://github.com/open-policy-agent/gatekeeper/blob/master/library/pod-security-policy/apparmor/template.yaml
@@ -68,11 +68,10 @@ You should pick yaml, anything between properties and targets [copy till targets
 ```
 
 
-#### Create Constraint
+#### (B) Create Constraint
 
 -- TODO --
 
-## Usage
 
 ```hcl
 resource "k8spolicy_constraint" "my-constraint" {
