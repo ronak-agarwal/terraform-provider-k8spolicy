@@ -9,6 +9,8 @@ Supported list of policy libraries - https://github.com/open-policy-agent/gateke
 ## Usage
 
 #### Create ConstraintTemplate
+-- TODO --
+
 Sample Policy Template used for below example - https://github.com/open-policy-agent/gatekeeper/blob/master/library/pod-security-policy/apparmor/template.yaml
 
 Below is main.tf sample for creating ConstraintTemplate
@@ -68,4 +70,29 @@ You should pick yaml, anything between properties and targets [copy till targets
 
 #### Create Constraint
 
-TODO
+-- TODO --
+
+## Usage
+
+```hcl
+resource "k8spolicy_constraint" "my-constraint" {
+
+  constraint_name = "constraint-pod"
+  constraint_crd_name = "K8sPSPAppArmor"
+  applyon_apigroups = [""]
+  applyon_kinds = ["Pod"]
+  parameters_values = "${file("${path.module}/parameters_values.json")}"
+}
+
+```
+
+Sample parameters_values.json picked from same apparmor constraint.yaml -
+https://github.com/open-policy-agent/gatekeeper/blob/master/library/pod-security-policy/apparmor/constraint.yaml
+
+```hcl
+{
+  "allowedProfiles": [
+    "runtime/default"
+  ]
+}
+```
