@@ -2,9 +2,12 @@
 
 STATUS - In Development
 
-You need to have Gatekeeper OPA v3 running on your kubernetes - https://github.com/open-policy-agent/gatekeeper
+## Prerequisite
 
-Supported list of policy libraries - https://github.com/open-policy-agent/gatekeeper/tree/master/library
+1. You need to have Gatekeeper OPA v3 running on your kubernetes - https://github.com/open-policy-agent/gatekeeper
+
+2. Identify list of Gatekeeper policies from this library which you need to apply on your cluster - https://github.com/open-policy-agent/gatekeeper/tree/master/library
+
 
 ## Usage
 
@@ -18,8 +21,7 @@ Below is main.tf sample for creating ConstraintTemplate
 ```hcl
 resource "k8spolicy_constraint_template" "my-policy" {
 
-  constraint_template_name = "k8spspapparmor"
-  constraint_crd_name = "K8sPSPAppArmor"
+  constraint_crd_name = "K8sPSPAppArmor"  //Template Name is always lower case of this value
   parameters = "${file("${path.module}/parameters.json")}"
   rego_defination = "${file("${path.module}/rego.yml")}"
 }

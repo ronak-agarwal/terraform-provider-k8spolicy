@@ -4,7 +4,6 @@ provider k8spolicy {
 
 resource "k8spolicy_constraint_template" "my-policy" {
 
-  constraint_template_name = "ronaklimit"
   constraint_crd_name = "Ronaklimit"
   parameters = "${file("${path.module}/parameters.json")}"
   rego_defination = "${file("${path.module}/rego.yml")}"

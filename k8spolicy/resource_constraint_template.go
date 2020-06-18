@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	k8sschema "k8s.io/apimachinery/pkg/runtime/schema"
-	k8stypes "k8s.io/apimachinery/pkg/types"
 )
 
 var (
@@ -31,10 +31,6 @@ func resourceConstraintTemplate() *schema.Resource {
 		Update: resourceUpdateConstraintTemplate,
 
 		Schema: map[string]*schema.Schema{
-			"constraint_template_name": &schema.Schema{
-				Type:     schema.TypeString,
-				Required: true,
-			},
 			"constraint_crd_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
@@ -56,13 +52,13 @@ func resourceCreateConstraintTemplate(d *schema.ResourceData, m interface{}) err
 	client := m.(*Config).Client
 	log.Printf("Creating NewConstraintTemplate")
 	var constraintTemplate *unstructured.Unstructured
-
+	templateName := strings.ToLower(d.Get("constraint_crd_name").(string))
 	if d.Get("parameters").(string) == "" {
-		constraintTemplate = NewConstraintTemplateWithoutParams(d.Get("constraint_template_name").(string), d.Get("constraint_crd_name").(string), d.Get("rego_defination").(string))
+		constraintTemplate = NewConstraintTemplateWithoutParams(templateName, d.Get("constraint_crd_name").(string), d.Get("rego_defination").(string))
 	} else {
 		var params map[string]interface{}
 		json.Unmarshal([]byte(d.Get("parameters").(string)), &params)
-		constraintTemplate = NewConstraintTemplateWithParams(d.Get("constraint_template_name").(string), d.Get("constraint_crd_name").(string), d.Get("rego_defination").(string), params)
+		constraintTemplate = NewConstraintTemplateWithParams(templateName, d.Get("constraint_crd_name").(string), d.Get("rego_defination").(string), params)
 	}
 	result, err := client.Resource(constraintTemplateGVR).Create(context.TODO(), constraintTemplate, metav1.CreateOptions{})
 	errExit(fmt.Sprintf("Failed to create NewConstraintTemplate %#v", constraintTemplate), err)
@@ -77,9 +73,9 @@ func resourceCreateConstraintTemplate(d *schema.ResourceData, m interface{}) err
 
 func resourceReadConstraintTemplate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Config).Client
-
-	result, err := client.Resource(constraintTemplateGVR).Get(context.TODO(), d.Get("constraint_template_name").(string), metav1.GetOptions{})
-	errExit(fmt.Sprintf("Failed to read ConstraintTemplate %#v", d.Get("constraint_template_name").(string)), err)
+	templateName := strings.ToLower(d.Get("constraint_crd_name").(string))
+	result, err := client.Resource(constraintTemplateGVR).Get(context.TODO(), templateName, metav1.GetOptions{})
+	errExit(fmt.Sprintf("Failed to read ConstraintTemplate %#v", templateName), err)
 	// Capture the UID at time of creation
 	id := string(result.GetUID())
 	d.SetId(id)
@@ -89,13 +85,13 @@ func resourceReadConstraintTemplate(d *schema.ResourceData, m interface{}) error
 
 func resourceExistsConstraintTemplate(d *schema.ResourceData, m interface{}) (bool, error) {
 	client := m.(*Config).Client
-
-	_, err := client.Resource(constraintTemplateGVR).Get(context.TODO(), d.Get("constraint_template_name").(string), metav1.GetOptions{})
+	templateName := strings.ToLower(d.Get("constraint_crd_name").(string))
+	_, err := client.Resource(constraintTemplateGVR).Get(context.TODO(), templateName, metav1.GetOptions{})
 	if err != nil {
 		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.ErrStatus.Code == 404 {
 			return false, nil
 		}
-		errExit(fmt.Sprintf("Failed to read ConstraintTemplate Exists %#v", d.Get("constraint_template_name").(string)), err)
+		errExit(fmt.Sprintf("Failed to read ConstraintTemplate Exists %#v", templateName), err)
 	}
 
 	return true, err
@@ -103,39 +99,45 @@ func resourceExistsConstraintTemplate(d *schema.ResourceData, m interface{}) (bo
 
 func resourceDeleteConstraintTemplate(d *schema.ResourceData, m interface{}) error {
 	client := m.(*Config).Client
-
-	err := client.Resource(constraintTemplateGVR).Delete(context.TODO(), d.Get("constraint_template_name").(string), metav1.DeleteOptions{})
-	errExit(fmt.Sprintf("Failed to delete ConstraintTemplate %#v", d.Get("constraint_template_name").(string)), err)
+	templateName := strings.ToLower(d.Get("constraint_crd_name").(string))
+	err := client.Resource(constraintTemplateGVR).Delete(context.TODO(), templateName, metav1.DeleteOptions{})
+	errExit(fmt.Sprintf("Failed to delete ConstraintTemplate %#v", templateName), err)
 	// Success remove it from state
 	d.SetId("")
 	return nil
 }
 
 func resourceUpdateConstraintTemplate(d *schema.ResourceData, m interface{}) error {
+	if d.HasChange("constraint_crd_name") {
+		log.Printf("Cannot Update Existing ConstraintTemplate CRD !!")
+		oldV, _ := d.GetChange("constraint_crd_name")
+		//log.Printf("new ConstraintTemplate CRD %s", newV)
+		d.Set("constraint_crd_name", strings.ToLower(oldV.(string)))
+		return resourceReadConstraintTemplate(d, m)
+	}
 	client := m.(*Config).Client
 	log.Printf("Updating NewConstraintTemplate")
+	templateName := strings.ToLower(d.Get("constraint_crd_name").(string))
+	getObj, err := client.Resource(constraintTemplateGVR).Get(context.TODO(), templateName, metav1.GetOptions{})
+	errExit(fmt.Sprintf("Failed to get ConstraintTemplate %#v", getObj), err)
 	var constraintTemplate *unstructured.Unstructured
+	if d.HasChange("rego_defination") || d.HasChange("parameters") {
+		if d.Get("parameters").(string) == "" {
+			constraintTemplate = NewConstraintTemplateWithoutParams(templateName, d.Get("constraint_crd_name").(string), d.Get("rego_defination").(string))
+		} else {
+			var params map[string]interface{}
+			json.Unmarshal([]byte(d.Get("parameters").(string)), &params)
+			constraintTemplate = NewConstraintTemplateWithParams(templateName, d.Get("constraint_crd_name").(string), d.Get("rego_defination").(string), params)
+		}
+		constraintTemplate.SetResourceVersion(getObj.GetResourceVersion())
+		result, err := client.Resource(constraintTemplateGVR).Update(context.TODO(), constraintTemplate, metav1.UpdateOptions{})
+		errExit(fmt.Sprintf("Failed to update NewConstraintTemplate %#v", constraintTemplate), err)
 
-	if d.Get("parameters").(string) == "" {
-		constraintTemplate = NewConstraintTemplateWithoutParams(d.Get("constraint_template_name").(string), d.Get("constraint_crd_name").(string), d.Get("rego_defination").(string))
-	} else {
-		var params map[string]interface{}
-		json.Unmarshal([]byte(d.Get("parameters").(string)), &params)
-		constraintTemplate = NewConstraintTemplateWithParams(d.Get("constraint_template_name").(string), d.Get("constraint_crd_name").(string), d.Get("rego_defination").(string), params)
+		// Capture the UID at time of creation
+		id := string(result.GetUID())
+		d.SetId(id)
 	}
-
-	ct, err := constraintTemplate.MarshalJSON()
-	if err != nil {
-		return fmt.Errorf("Failed to marshal update operations: %s", err)
-	}
-	result, err := client.Resource(constraintTemplateGVR).Patch(context.TODO(), d.Get("constraint_template_name").(string), k8stypes.MergePatchType, ct, metav1.PatchOptions{})
-	errExit(fmt.Sprintf("Failed to update NewConstraintTemplate %#v", constraintTemplate), err)
-	log.Printf("Updated NewConstraintTemplate %s", result)
-
-	// Capture the UID at time of creation
-	id := string(result.GetUID())
-	d.SetId(id)
-	return nil
+	return resourceReadConstraintTemplate(d, m)
 }
 
 // NewConstraintTemplateWithoutParams ...

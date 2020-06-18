@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	k8sschema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -17,6 +18,7 @@ func resourceConstraint() *schema.Resource {
 	return &schema.Resource{
 		Create: resourceCreateConstraint,
 		Read:   resourceReadConstraint,
+		Exists: resourceExistsConstraint,
 		Delete: resourceDeleteConstraint,
 		Update: resourceUpdateConstraint,
 
@@ -85,13 +87,51 @@ func resourceCreateConstraint(d *schema.ResourceData, m interface{}) error {
 
 	return resourceReadConstraint(d, m)
 }
-func resourceReadConstraint(d *schema.ResourceData, m interface{}) error {
 
+func resourceReadConstraint(d *schema.ResourceData, m interface{}) error {
+	constraintGVR := k8sschema.GroupVersionResource{
+		Group:    "constraints.gatekeeper.sh",
+		Version:  "v1beta1",
+		Resource: strings.ToLower(d.Get("constraint_crd_name").(string)),
+	}
+	client := m.(*Config).Client
+	result, err := client.Resource(constraintGVR).Get(context.TODO(), d.Get("constraint_name").(string), metav1.GetOptions{})
+	errExit(fmt.Sprintf("Failed to read Constraint %#v", d.Get("constraint_name").(string)), err)
+	// Capture the UID at time of creation
+	id := string(result.GetUID())
+	d.SetId(id)
 	return nil
 }
 
-func resourceDeleteConstraint(d *schema.ResourceData, m interface{}) error {
+func resourceExistsConstraint(d *schema.ResourceData, m interface{}) (bool, error) {
+	constraintGVR := k8sschema.GroupVersionResource{
+		Group:    "constraints.gatekeeper.sh",
+		Version:  "v1beta1",
+		Resource: strings.ToLower(d.Get("constraint_crd_name").(string)),
+	}
+	client := m.(*Config).Client
+	_, err := client.Resource(constraintGVR).Get(context.TODO(), d.Get("constraint_name").(string), metav1.GetOptions{})
+	if err != nil {
+		if statusErr, ok := err.(*errors.StatusError); ok && statusErr.ErrStatus.Code == 404 {
+			return false, nil
+		}
+		errExit(fmt.Sprintf("Failed to read Constraint Exists %#v", d.Get("constraint_name").(string)), err)
+	}
 
+	return true, err
+}
+
+func resourceDeleteConstraint(d *schema.ResourceData, m interface{}) error {
+	constraintGVR := k8sschema.GroupVersionResource{
+		Group:    "constraints.gatekeeper.sh",
+		Version:  "v1beta1",
+		Resource: strings.ToLower(d.Get("constraint_crd_name").(string)),
+	}
+	client := m.(*Config).Client
+	err := client.Resource(constraintGVR).Delete(context.TODO(), d.Get("constraint_name").(string), metav1.DeleteOptions{})
+	errExit(fmt.Sprintf("Failed to delete Constraint %#v", d.Get("constraint_name").(string)), err)
+	// Success remove it from state
+	d.SetId("")
 	return nil
 }
 
