@@ -10,7 +10,7 @@ resource "k8spolicy_constraint_template" "my-policy" {
 }
 
 resource "k8spolicy_constraint" "my-constraint" {
-
+  depends_on = [k8spolicy_constraint_template.my-policy]
   constraint_name = "ronak-constraint"
   constraint_crd_name = "Ronaklimit"
   applyon_apigroups = [""]

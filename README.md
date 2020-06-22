@@ -1,6 +1,6 @@
 # terraform-provider-k8spolicy
 
-STATUS - In Development
+STATUS - Testing of Alpha Release
 
 ## Prerequisite
 
@@ -12,7 +12,7 @@ STATUS - In Development
 ## Usage
 
 #### (A) Create ConstraintTemplate
--- TODO --
+-- In Testing --
 
 Sample Policy Template used for below example - https://github.com/open-policy-agent/gatekeeper/blob/master/library/pod-security-policy/apparmor/template.yaml
 
@@ -72,12 +72,12 @@ You should pick yaml, anything between properties and targets [copy till targets
 
 #### (B) Create Constraint
 
--- TODO --
+-- In Testing --
 
 
 ```hcl
 resource "k8spolicy_constraint" "my-constraint" {
-
+  depends_on = [k8spolicy_constraint_template.my-policy] //make sure constraint is created once its template CRD available
   constraint_name = "constraint-pod"
   constraint_crd_name = "K8sPSPAppArmor"
   applyon_apigroups = [""]

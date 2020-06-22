@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -67,6 +68,8 @@ func resourceCreateConstraintTemplate(d *schema.ResourceData, m interface{}) err
 	// Capture the UID at time of creation
 	id := string(result.GetUID())
 	d.SetId(id)
+	// Add wait time of creation
+	time.Sleep(10 * time.Second)
 
 	return resourceReadConstraintTemplate(d, m)
 }
@@ -136,6 +139,8 @@ func resourceUpdateConstraintTemplate(d *schema.ResourceData, m interface{}) err
 		// Capture the UID at time of creation
 		id := string(result.GetUID())
 		d.SetId(id)
+		// Add wait time of creation
+		time.Sleep(10 * time.Second)
 	}
 	return resourceReadConstraintTemplate(d, m)
 }
