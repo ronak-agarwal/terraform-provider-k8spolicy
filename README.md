@@ -11,6 +11,9 @@ STATUS - Testing of Alpha Release
 
 ## Usage
 
+1. You can download the plugin binary from latest release - https://github.com/ronak-agarwal/terraform-provider-k8spolicy/releases/download/v1.0-alpha/terraform-provider-k8spolicy
+2. Copy binary ~/.terraform.d/plugins/darwin_amd64/
+
 #### (A) Create ConstraintTemplate
 -- In Testing --
 
